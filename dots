@@ -1,29 +1,39 @@
 #!/usr/bin/env bash
 # Inspired by henrik's Rakefile at https://github.com/henrik/dotfiles/blob/master/Rakefile
-
-# TODO : parameter to overwrite regular files without prompt
-# TODO : parameter to simulate what would happen
-# TODO : parameter for verbose execution
-# TODO : parameter to auto-overwrite existing files
+SIMULATE=0; BASHVE=0;
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -s|--simulate)
+    SIMULATE=1
+    ;;
+    -v|--verbose)
+    BASHVE=1
+    ;;
+  esac
+  shift
+done
 
 THIS_FILE=`basename "$0"`
-THIS_PATH="$PWD"
+THIS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 IGNORE_FILES=(
   ".gitignore"
   "LICENSE"
   "README.md"
   $THIS_FILE
 )
+if (( $BASHVE )); then echo "Bash Verbose Execution is ON"; fi
 
 for DOTFILE in $THIS_PATH/*; do
   DOTFILE="${DOTFILE##*/}"
   if [[ ! " ${IGNORE_FILES[@]} " =~ " ${DOTFILE} " ]]; then
-    if [[ -L "$HOME/.${DOTFILE}" ]]; then                                       # if dotfile is a symlink
-      rm $HOME/.$DOTFILE                                                        #   delete the link
-    elif [[ -f "$HOME/.$DOTFILE" ]]; then                                       # if dotfile is a regular file
-      # TODO : Ask to [r]eplace or [i]gnore
-      mv $HOME/.$DOTFILE $HOME/.$DOTFILE.bak                                    #   rename the file
+    if [[ -L "$HOME/.${DOTFILE}" ]]; then                                       # dotfile is a symlink
+      if (( $SIMULATE )) || (( $BASHVE )); then echo "Removing symlink file at ~/.$DOTFILE"; fi
+      if (( ! $SIMULATE )); then rm $HOME/.$DOTFILE; fi
+    elif [[ -f "$HOME/.$DOTFILE" ]]; then                                       # dotfile is a regular file
+      if (( $SIMULATE )) || (( $BASHVE )); then echo "Removing regular file at ~/.$DOTFILE"; fi
+      if (( ! $SIMULATE )); then mv -f $HOME/.$DOTFILE $HOME/.$DOTFILE.dots; fi
     fi
-    ln -s $THIS_PATH/$DOTFILE $HOME/.$DOTFILE                                   # link dotfiles to home
+    if (( $SIMULATE )) || (( $BASHVE )); then echo "Creating symlink at ~/.$DOTFILE to $THIS_PATH/$DOTFILE"; fi
+    if (( ! $SIMULATE )); then ln -s $THIS_PATH/$DOTFILE $HOME/.$DOTFILE; fi    # link dotfiles to home
   fi
 done

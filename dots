@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Inspired by henrik's Rakefile at https://github.com/henrik/dotfiles/blob/master/Rakefile
+
+# TODO : parameter to overwrite regular files without prompt
+# TODO : parameter to simulate what would happen
+# TODO : parameter for verbose execution
+# TODO : parameter to auto-overwrite existing files
+
+THIS_FILE=`basename "$0"`
+THIS_PATH="$PWD"
+IGNORE_FILES=(
+  ".gitignore"
+  "LICENSE"
+  "README.md"
+  $THIS_FILE
+)
+
+for DOTFILE in $THIS_PATH/*; do
+  DOTFILE="${DOTFILE##*/}"
+  if [[ ! " ${IGNORE_FILES[@]} " =~ " ${DOTFILE} " ]]; then
+    if [[ -L "$HOME/.${DOTFILE}" ]]; then                                       # if dotfile is a symlink
+      rm $HOME/.$DOTFILE                                                        #   delete the link
+    elif [[ -f "$HOME/.$DOTFILE" ]]; then                                       # if dotfile is a regular file
+      # TODO : Ask to [r]eplace or [i]gnore
+      mv $HOME/.$DOTFILE $HOME/.$DOTFILE.bak                                    #   rename the file
+    fi
+    ln -s $THIS_PATH/$DOTFILE $HOME/.$DOTFILE                                   # link dotfiles to home
+  fi
+done

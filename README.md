@@ -8,8 +8,7 @@ Clone this repo into `~/.dotfiles`:
 
 Link the dotfiles:
 
-    cd ~/.dotfiles
-    bash dots
+    bash ~/.dotfiles/dots [-s, --simulate] [-v, --verbose]
 
 ## vim 8+
 

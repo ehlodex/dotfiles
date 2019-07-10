@@ -1,2 +1,3 @@
 alias tmux='tmux 2'
-alias wpscan='docker run wpscanteam/wpscan'
+alias wpscan='sudo docker run wpscanteam/wpscan'
+alias 2fa='~/bin/totp'

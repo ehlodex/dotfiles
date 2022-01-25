@@ -25,26 +25,26 @@ for DOT_FILE in $DOT_PATH/*; do
   if [[ ! "${IGNORE_FILES[@]}" =~ "${DOT_FILE}" ]]; then
     [ $BVE ] && echo ".$DOT_FILE"
   
-    # If the link is already a link and not pointing to DOT_PATH
+    # If ~/.$DOT_FILE is already a link, unlink it
     if [ -L "$HOME/.$DOT_FILE" ]; then
       [ $BVE ] || [ $SIM ] && echo " - unlinked from $(readlink -f $HOME/.$DOT_FILE)"
-      #[ ! $SIM ] && rm "$HOME/.$DOT_FILE"
+      [ ! $SIM ] && rm "$HOME/.$DOT_FILE"
     fi
     
-    # If the link is a regular file
+    # If ~/.$DOT_FILE is a regular file, rename it
     if [ -f $HOME/.$DOT_FILE ]; then
       [ $BVE ] || [ $SIM ] && echo " - renamed to $HOME/$DOT_FILE.dots"
-      #[ ! $SIM ] && mv -f "$HOME/.$DOT_FILE" "$HOME/$DOT_FILE.dots"
+      [ ! $SIM ] && mv -f "$HOME/.$DOT_FILE" "$HOME/$DOT_FILE.dots"
     fi
     
     # Create the link
     [ $BVE ] || [ $SIM ] && echo " - linked to $DOT_PATH/$DOT_FILE"
-    #[ ! $SIM ] && ln -s "$DOT_PATH/$DOT_FILE" "$HOME/.$DOT_FILE"
+    [ ! $SIM ] && ln -s "$DOT_PATH/$DOT_FILE" "$HOME/.$DOT_FILE"
   fi
 done
 
-# Check for files named *.dots (e.g. bash_aliases.dots)
+# Check for files renamed *.dots by Line 37 (e.g. bash_aliases.dots)
 if [ "$(ls -al $HOME/*.dots 2> /dev/null | wc -l)" != "0" ]; then
-  echo "The following files may have been created by this script and could be removed:"
+  echo "The following files may have been created by this script:"
   ls -al *.dots
 fi

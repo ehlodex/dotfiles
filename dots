@@ -1,39 +1,50 @@
 #!/usr/bin/env bash
 # Inspired by henrik's Rakefile at https://github.com/henrik/dotfiles/blob/master/Rakefile
-SIMULATE=0; BASHVE=0;
-while [ $# -gt 0 ]; do
-  case "$1" in
-    -s|--simulate)
-    SIMULATE=1
-    ;;
-    -v|--verbose)
-    BASHVE=1
-    ;;
+
+while getopts "sv" flag; do
+  case "${flag}" in
+    s) SIM=1;;
+    v) BVE=1;;
   esac
-  shift
 done
 
-THIS_FILE=`basename "$0"`
-THIS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 IGNORE_FILES=(
   ".gitignore"
   "LICENSE"
   "README.md"
-  $THIS_FILE
+  "$(basename "$0")"  # or just "dots"
 )
-if (( $BASHVE )); then echo "Bash Verbose Execution is ON"; fi
 
-for DOTFILE in $THIS_PATH/*; do
-  DOTFILE="${DOTFILE##*/}"
-  if [[ ! " ${IGNORE_FILES[@]} " =~ " ${DOTFILE} " ]]; then
-    if [[ -L "$HOME/.${DOTFILE}" ]]; then                                       # dotfile is a symlink
-      if (( $SIMULATE )) || (( $BASHVE )); then echo "Removing symlink file at ~/.$DOTFILE"; fi
-      if (( ! $SIMULATE )); then rm $HOME/.$DOTFILE; fi
-    elif [[ -f "$HOME/.$DOTFILE" ]]; then                                       # dotfile is a regular file
-      if (( $SIMULATE )) || (( $BASHVE )); then echo "Removing regular file at ~/.$DOTFILE"; fi
-      if (( ! $SIMULATE )); then mv -f $HOME/.$DOTFILE $HOME/.$DOTFILE.dots; fi
+DOT_PATH=$(dirname "$(readlink -f "$0")")
+[ $BVE ] && echo "DOT_PATH: $DOT_PATH"
+[ $BVE ] && [ $SIM ] && echo "**** This is a simulation! ****"
+
+for DOT_FILE in $DOT_PATH/*; do
+  DOT_FILE=$(basename "${DOT_FILE}")
+  
+  if [[ ! "${IGNORE_FILES[@]}" =~ "${DOT_FILE}" ]]; then
+    [ $BVE ] && echo ".$DOT_FILE"
+  
+    # If the link is already a link and not pointing to DOT_PATH
+    if [ -L "$HOME/.$DOT_FILE" ]; then
+      [ $BVE ] || [ $SIM ] && echo " - unlinked from $(readlink -f $HOME/.$DOT_FILE)"
+      #[ ! $SIM ] && rm "$HOME/.$DOT_FILE"
     fi
-    if (( $SIMULATE )) || (( $BASHVE )); then echo "Creating symlink at ~/.$DOTFILE to $THIS_PATH/$DOTFILE"; fi
-    if (( ! $SIMULATE )); then ln -s $THIS_PATH/$DOTFILE $HOME/.$DOTFILE; fi    # link dotfiles to home
+    
+    # If the link is a regular file
+    if [ -f $HOME/.$DOT_FILE ]; then
+      [ $BVE ] || [ $SIM ] && echo " - renamed to $HOME/$DOT_FILE.dots"
+      #[ ! $SIM ] && mv -f "$HOME/.$DOT_FILE" "$HOME/$DOT_FILE.dots"
+    fi
+    
+    # Create the link
+    [ $BVE ] || [ $SIM ] && echo " - linked to $DOT_PATH/$DOT_FILE"
+    #[ ! $SIM ] && ln -s "$DOT_PATH/$DOT_FILE" "$HOME/.$DOT_FILE"
   fi
 done
+
+# Check for files named *.dots (e.g. bash_aliases.dots)
+if [ "$(ls -al $HOME/*.dots 2> /dev/null | wc -l)" != "0" ]; then
+  echo "The following files may have been created by this script and could be removed:"
+  ls -al *.dots
+fi

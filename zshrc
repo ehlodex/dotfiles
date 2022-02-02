@@ -9,7 +9,7 @@ zstyle :compinstall filename '/home/ehlodex/.zshrc'
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
-PROMPT='%(?.%F{green}0.%F{red}?%?)%f %B%F{blue}%~%b%f%# '
+PROMPT='%(?.%F{green}0.%F{red}%?)%f %B%F{blue}%~%b%f%# '
 
 # Re-enable some bash-like shortcuts, even though we're using vi-mode
 bindkey "^A" vi-beginning-of-line

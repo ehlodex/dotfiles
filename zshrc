@@ -11,6 +11,8 @@ compinit
 # End of lines added by compinstall
 PROMPT='%(?.%F{green}0.%F{red}%?)%f %B%F{blue}%~%b%f%# '
 
+setopt interactivecomments
+
 # Re-enable some bash-like shortcuts, even though we're using vi-mode
 bindkey "^A" vi-beginning-of-line
 bindkey "^E" vi-end-of-line
